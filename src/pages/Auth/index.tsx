@@ -28,18 +28,23 @@ const Auth: React.FC<IAuth> = ({ socket }) => {
     });
 
     socket.on("authError", (msg) => {
-      console.log("error: ", msg);
+      console.log("server emitted");
 
       setIsLoading(false);
       setIsFormValid(false);
       setErrorMessage(msg);
+      setShowError(true);
     });
 
     return () => {
       socket.off("authError");
       socket.off("newUserAdded");
     };
-  }, []);
+  }, [socket]);
+
+  useEffect(() => {
+    checkInputs();
+  }, [inputValues]);
 
   const inputChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.currentTarget;
@@ -48,7 +53,6 @@ const Auth: React.FC<IAuth> = ({ socket }) => {
       ...prev,
       [name]: value,
     }));
-    checkInputs();
   };
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -61,6 +65,8 @@ const Auth: React.FC<IAuth> = ({ socket }) => {
         email: inputValues.email,
       };
       socket.emit("newUser", user);
+      console.log("emitted");
+
       setIsLoading(true);
     } else {
       setShowError(true);
@@ -79,6 +85,7 @@ const Auth: React.FC<IAuth> = ({ socket }) => {
       setErrorMessage("Passwords does not match!");
       return;
     }
+    setShowError(false);
     setErrorMessage("");
     setIsFormValid(true);
   };
