@@ -38,13 +38,13 @@ const App = () => {
   const [user, setUser] = useState<IUser | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
 
-  useEffect(() => {
-    fetch("http://localhost:3000/api/auth/checkToken", {
-      credentials: "include",
-    })
-      .then((d) => d.json())
-      .then((d) => console.log(d));
-  }, []);
+  // useEffect(() => {
+  //   fetch("http://localhost:3000/api/auth/checkToken", {
+  //     credentials: "include",
+  //   })
+  //     .then((d) => d.json())
+  //     .then((d) => console.log(d));
+  // }, []);
 
   useEffect(() => {
     if (!user) return;
