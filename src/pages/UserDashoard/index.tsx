@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
+import SearchUser from "../../components/SearchUser";
 import {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -25,7 +26,7 @@ const UserDashboard = () => {
       .then((d) => {
         if (!d.success) {
           if (d.errMsg === "Token not found") {
-            return navigate("/login")
+            return navigate("/login");
           }
           setIsError(true);
           setErrorMessage(d.errMsg);
@@ -47,7 +48,12 @@ const UserDashboard = () => {
     };
   }, [user]);
 
-  return <div>{isError && <p>{errorMessage}</p>}</div>;
+  return (
+    <div>
+      {isError && <p>{errorMessage}</p>}
+      <SearchUser />
+    </div>
+  );
 };
 
 export default UserDashboard;

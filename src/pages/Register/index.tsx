@@ -1,75 +1,71 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import styles from "./styles.module.scss";
 import { SignUpValues } from "../../interfaces/user";
-import { useNavigate } from "react-router-dom";
+
+interface IRegisterPostRes {
+  success: true;
+}
+interface IRegisterError {
+  success: true;
+  msg?: string;
+}
 
 const Register: React.FC = () => {
-  const [data, setData] = useState<SignUpValues>({
+  const [inputValues, setInputvalues] = useState<SignUpValues>({
     email: "",
     password: "",
     username: "",
     verify_password: "",
   });
-  const [isError, setIsError] = useState(false);
+  const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { mutate, data } = useMutation<IRegisterPostRes, Error>({
+    mutationFn: () => {
+      const { username, password, email } = inputValues;
+      return fetch("http://localhost:3000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+        }),
+        credentials: "include",
+      }).then(async (d) => {
+        const res = await d.clone().json();
+        if (d.ok && res.success) return d.json();
+        throw new Error(res.msg);
+      });
+    },
+    onError: (err) => {
+      setErrorMessage(err.message);
+      setShowError(true);
+    },
+    onSuccess: (res) => {
+      navigate("/user/dashboard");
+    },
+  });
 
   useEffect(() => {
     checkInputs();
-  }, [data]);
+  }, [inputValues]);
 
   const inputChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isError) setIsError(false);
+    if (showError) setShowError(false);
     const { name, value } = e.target;
-    setData((prev) => ({
+    setInputvalues((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const sumbitHandler = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
-    e.preventDefault();
-    if (errorMessage) return setIsError(true);
-    const { username, password, email } = data;
-    setIsLoading(true);
-    fetch("http://localhost:3000/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        email,
-        password,
-      }),
-      credentials: "include",
-    })
-      .then((d) => d.json())
-      .then((d) => {
-        setIsLoading(false);
-        if (!d.success) {
-          setIsError(true);
-          setErrorMessage(d.msg);
-          return;
-        } else {
-          // TODO: show user that registration process passed succesfully
-
-          navigate("/");
-        }
-      })
-      .catch((err) => {
-        setIsLoading(false);
-        setIsError(true);
-        setErrorMessage("Something went wrong... Try again");
-        console.log(err.message);
-      });
-  };
-
   const checkInputs = () => {
-    const { username, password, verify_password, email } = data;
+    const { username, password, verify_password, email } = inputValues;
     if (!username || !password || !verify_password || !email) {
       setErrorMessage("Please fill all inputs");
     } else if (password !== verify_password) {
@@ -79,49 +75,45 @@ const Register: React.FC = () => {
     }
   };
 
+  const sumbitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (errorMessage) return setShowError(true);
+    mutate();
+  };
+
   return (
     <div className={styles.auth}>
-      {isError && <p>{errorMessage}</p>}
-      <form>
-        <label htmlFor="username">
-          Username:
-          <input
-            onChange={inputChangeHandler}
-            name="username"
-            type="text"
-            value={data.username}
-          />
-        </label>
-        <label htmlFor="email">
-          Email:
-          <input
-            onChange={inputChangeHandler}
-            name="email"
-            type="email"
-            value={data.email}
-          />
-        </label>
-        <label htmlFor="password">
-          Password:
-          <input
-            onChange={inputChangeHandler}
-            name="password"
-            type="password"
-            value={data.password}
-          />
-        </label>
-        <label htmlFor="verify_password">
-          Verify Password
-          <input
-            onChange={inputChangeHandler}
-            name="verify_password"
-            type="password"
-            value={data.verify_password}
-          />
-        </label>
-        <button onClick={sumbitHandler} disabled={isLoading || isError}>
-          {isLoading ? "Loading..." : "Submit"}
-        </button>
+      {showError && <p>{errorMessage}</p>}
+      <form onSubmit={sumbitHandler}>
+        <label htmlFor="username">Username:</label>
+        <input
+          onChange={inputChangeHandler}
+          type="text"
+          name="username"
+          value={inputValues.username}
+        />
+        <label htmlFor="email">Email:</label>
+        <input
+          onChange={inputChangeHandler}
+          type="email"
+          name="email"
+          value={inputValues.email}
+        />
+        <label htmlFor="password">Password:</label>
+        <input
+          onChange={inputChangeHandler}
+          type="password"
+          name="password"
+          value={inputValues.password}
+        />
+        <label htmlFor="verify_password">Verify password:</label>
+        <input
+          onChange={inputChangeHandler}
+          type="password"
+          name="verify_password"
+          value={inputValues.verify_password}
+        />
+        <button>Submit</button>
       </form>
     </div>
   );

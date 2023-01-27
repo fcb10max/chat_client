@@ -6,6 +6,7 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
 import "./globalStyles.module.scss";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -27,8 +28,10 @@ const Wrapper: React.FC<IWrapperProps> = ({ children }) => {
 
 
 const App = () => {
+  const queryClient = new QueryClient();
   return (
     <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
       <main>
         <Wrapper>
           <Routes>
@@ -40,6 +43,7 @@ const App = () => {
           </Routes>
         </Wrapper>
       </main>
+    </QueryClientProvider>
     </BrowserRouter>
   );
 };
