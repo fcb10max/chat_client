@@ -8,3 +8,8 @@ export interface SignInValues {
   username: string;
   password: string;
 }
+
+export interface IUser {
+  userID: number;
+  username: string;
+}

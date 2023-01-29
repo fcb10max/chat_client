@@ -1,27 +1,41 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 interface ISuggUser {
   username: string;
   id: number;
 }
 
-const SearchUser = () => {
+export const SearchUser = () => {
   const [searchValue, setSearchValue] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState<ISuggUser[]>([]);
   const [isError, setIsError] = useState(false);
   const [errMsg, setErrMsg] = useState("");
+  const { mutate } = useMutation({
+    mutationKey: ["userSearchSuggestion", searchValue],
+    mutationFn: (searchValue) => {
+      return fetch("http://localhost:3000/api/userSearchSuggestions", {
+        method: "POST",
+        body: JSON.stringify({ username: searchValue }),
+      }).then(async (d) => {
+        const res = await d.clone().json();
+        if (d.ok && res.success) return d.json();
+        throw new Error(res.msg);
+      });
+    },
+    onError: (err: Error) => {
+      setIsError(true);
+      setErrMsg("Something went wrong during users suggestion fetch");
+      console.log(err.message);
+    },
+    onSuccess: (res) => {
+      setSearchSuggestions(res.users);
+    },
+  });
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/userSearchSuggestions")
-      .then((j) => j.json())
-      .then((d) => {
-        if (!d.success) {
-          setIsError(true);
-          setErrMsg("Something went wron during users suggestion fetch");
-          return;
-        }
-        setSearchSuggestions(d.users);
-      });
+    mutate();
   }, []);
 
   const suggestionItemClickHandler = (
@@ -31,25 +45,33 @@ const SearchUser = () => {
     setSearchValue(value);
   };
 
+  const inputChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.currentTarget.value);
+  };
+
   return (
     <div>
-      <input
-        type="text"
-        value={searchValue}
-        onChange={(e) => setSearchValue(e.currentTarget.value)}
-      />
+      <input type="text" value={searchValue} onChange={inputChangeHandler} />
       <div>
-        <h1>Suggestions:</h1>
-        <ul>
-          {searchSuggestions.map((i) => (
-            <li onClick={suggestionItemClickHandler} key={i.id}>
-              {i.username}
-            </li>
-          ))}
-        </ul>
+        {isError && <p>{errMsg}</p>}
+        {searchSuggestions.length > 0 && (
+          <>
+            <h1>Suggestions:</h1>
+            <ul>
+              {searchSuggestions.map((i) => (
+                <li onClick={suggestionItemClickHandler} key={i.id}>
+                  <Link
+                    to={"/user/dashboard/direct"}
+                    state={{ selectedUser: i }}
+                  >
+                    {i.username}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
     </div>
   );
 };
-
-export default SearchUser;
