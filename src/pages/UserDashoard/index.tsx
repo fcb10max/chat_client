@@ -7,15 +7,18 @@ import {
   ClientToServerEvents,
   ServerToClientEvents,
   IUser,
+  SocketType,
 } from "../../interfaces";
+import { IConversation } from "../../interfaces/message";
 import Direct from "./LocalPaths/Direct";
 import UserContacts from "./LocalPaths/UserContacts";
 
 const UserDashboard = () => {
   const [user, setUser] = useState<IUser | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<SocketType | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isError, setIsError] = useState(false);
+  const [conversations, setConversations] = useState<IConversation[]>([]);
   const navigate = useNavigate();
   const { isLoading } = useQuery({
     queryKey: ["checkToken"],
@@ -46,7 +49,6 @@ const UserDashboard = () => {
       process.env.REACT_APP_WS_SERVER_URL ?? "ws://localhost:3000/",
       { auth: user }
     );
-    console.log(newSocket.username);
 
     setSocket(newSocket);
     return () => {
@@ -59,15 +61,19 @@ const UserDashboard = () => {
     socket.on("message:direct", (data) => {
       console.log("message: ", data);
     });
+    socket.emit("message:getAllConvs");
+    socket.on("message:getAllConvs", (conversations: IConversation[]) =>
+      setConversations(conversations)
+    );
   }, [socket]);
 
   return (
     <div>
       {isError && <p>{errorMessage}</p>}
-      {/* <SearchUser /> */}
+      <SearchUser />
       <ActiveUsers socket={socket} />
       <Routes>
-        <Route path="/" element={<UserContacts />} />
+        <Route path="/" element={<UserContacts convs={conversations} />} />
         <Route
           path="/direct"
           element={<Direct socket={socket} user={user} />}

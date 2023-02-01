@@ -11,3 +11,8 @@ export interface IRenderMessage {
   created: number,
   content: string,
 }
+
+export interface IConversation {
+  user: {id: number, username: string} ;
+  lastMsg: IMessageFromDB;
+}

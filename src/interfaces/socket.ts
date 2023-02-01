@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { IMessageFromDB, IRenderMessage } from "./message";
+import { IConversation, IMessageFromDB } from "./message";
 import { IUser } from "./user";
 
 declare module "socket.io-client" {
@@ -15,6 +15,7 @@ export interface ServerToClientEvents {
   }) => void;
   users: (users: IUser[]) => void;
   "message:getAll": (messages: IMessageFromDB[]) => void;
+  "message:getAllConvs": (convs: IConversation[]) => void;
 }
 
 export interface ClientToServerEvents {
@@ -24,6 +25,7 @@ export interface ClientToServerEvents {
     to: number;
   }) => void;
   "message:getAll": (users: { from: number; to: number }) => void;
+  "message:getAllConvs": () => void;
 }
 
 export interface InterServerEvents {}

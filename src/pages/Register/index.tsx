@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import styles from "./styles.module.scss";
 import { SignUpValues } from "../../interfaces/user";
+import eye_show from "../../assets/svg/eye_show.svg";
+import eye_hide from "../../assets/svg/eye_hide.svg";
 
 interface IRegisterPostRes {
   success: true;
-}
-interface IRegisterError {
-  success: true;
-  msg?: string;
 }
 
 const Register: React.FC = () => {
@@ -19,10 +17,14 @@ const Register: React.FC = () => {
     username: "",
     verify_password: "",
   });
-  const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
-  const { mutate, data } = useMutation<IRegisterPostRes, Error>({
+  const formRef = useRef<HTMLFormElement>(null);
+  const [showPassword, setShowPassword] = useState({
+    first: false,
+    last: false,
+  });
+  const { mutate } = useMutation<IRegisterPostRes, Error>({
     mutationFn: () => {
       const { username, password, email } = inputValues;
       return fetch("http://localhost:3000/api/auth/register", {
@@ -44,19 +46,14 @@ const Register: React.FC = () => {
     },
     onError: (err) => {
       setErrorMessage(err.message);
-      setShowError(true);
     },
     onSuccess: (res) => {
       navigate("/user/dashboard");
     },
   });
 
-  useEffect(() => {
-    checkInputs();
-  }, [inputValues]);
-
   const inputChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (showError) setShowError(false);
+    setErrorMessage("");
     const { name, value } = e.target;
     setInputvalues((prev) => ({
       ...prev,
@@ -65,54 +62,109 @@ const Register: React.FC = () => {
   };
 
   const checkInputs = () => {
-    const { username, password, verify_password, email } = inputValues;
-    if (!username || !password || !verify_password || !email) {
-      setErrorMessage("Please fill all inputs");
-    } else if (password !== verify_password) {
-      setErrorMessage("Passwords does not match");
-    } else {
-      setErrorMessage("");
+    if (!formRef.current) return false;
+    const form = formRef.current;
+    const inputs = Array.from(form.getElementsByTagName("input"));
+    const invalidInput = inputs.find((input) => !input.validity.valid);
+    if (invalidInput) {
+      const { name, minLength } = invalidInput;
+      const { valueMissing, typeMismatch, tooShort } = invalidInput.validity;
+      if (tooShort) {
+        setErrorMessage(
+          `Input ${name} should contain at least ${minLength} characters`
+        );
+        return false;
+      } else if (valueMissing) {
+        setErrorMessage(`Please fill input ${name}`);
+        return false;
+      } else if (typeMismatch) {
+        setErrorMessage(`Please write valid ${name}`);
+        return false;
+      }
     }
+    if (inputValues.password !== inputValues.verify_password) {
+      setErrorMessage("Entered passwords does not match");
+      return false;
+    }
+    return true;
   };
 
   const sumbitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (errorMessage) return setShowError(true);
+    const isValid = checkInputs();
+    if (!isValid) return;
     mutate();
   };
 
   return (
     <div className={styles.auth}>
-      {showError && <p>{errorMessage}</p>}
-      <form onSubmit={sumbitHandler}>
-        <label htmlFor="username">Username:</label>
-        <input
-          onChange={inputChangeHandler}
-          type="text"
-          name="username"
-          value={inputValues.username}
-        />
-        <label htmlFor="email">Email:</label>
-        <input
-          onChange={inputChangeHandler}
-          type="email"
-          name="email"
-          value={inputValues.email}
-        />
-        <label htmlFor="password">Password:</label>
-        <input
-          onChange={inputChangeHandler}
-          type="password"
-          name="password"
-          value={inputValues.password}
-        />
-        <label htmlFor="verify_password">Verify password:</label>
-        <input
-          onChange={inputChangeHandler}
-          type="password"
-          name="verify_password"
-          value={inputValues.verify_password}
-        />
+      <h1>Join us</h1>
+      {errorMessage && <p>{errorMessage}</p>}
+      <form onSubmit={sumbitHandler} noValidate ref={formRef}>
+        <div>
+          <input
+            onChange={inputChangeHandler}
+            type="text"
+            name="username"
+            value={inputValues.username}
+            minLength={5}
+            required
+          />
+          <label htmlFor="username">Username</label>
+        </div>
+        <div>
+          <input
+            onChange={inputChangeHandler}
+            type="email"
+            name="email"
+            value={inputValues.email}
+            minLength={5}
+            required
+          />
+          <label htmlFor="email">Email</label>
+        </div>
+        <div>
+          <input
+            onChange={inputChangeHandler}
+            type={showPassword.first ? "text" : "password"}
+            name="password"
+            value={inputValues.password}
+            minLength={8}
+            required
+          />
+          <label htmlFor="password">Password</label>
+          <span
+            onClick={() =>
+              setShowPassword((prev) => ({ ...prev, first: !prev.first }))
+            }
+          >
+            <img
+              src={showPassword.first ? eye_hide : eye_show}
+              alt="show-hide password"
+            />
+          </span>
+        </div>
+        <div>
+          <input
+            onChange={inputChangeHandler}
+            type={showPassword.last ? "text" : "password"}
+            name="verify_password"
+            value={inputValues.verify_password}
+            minLength={8}
+            required
+          />
+          <label htmlFor="verify_password">Verify password</label>
+          <span
+            onClick={() =>
+              setShowPassword((prev) => ({ ...prev, last: !prev.last }))
+            }
+          >
+            <img
+              src={showPassword.last ? eye_hide : eye_show}
+              alt="show-hide password"
+            />
+          </span>
+        </div>
         <button>Submit</button>
       </form>
     </div>
