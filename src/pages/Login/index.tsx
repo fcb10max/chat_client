@@ -91,7 +91,7 @@ const Login: React.FC = () => {
 
   return (
     <div className={styles.auth}>
-      <h1>Join us</h1>
+      <h1>Welcome back!</h1>
       {errorMessage && <p>{errorMessage}</p>}
       <form onSubmit={sumbitHandler} noValidate ref={formRef}>
         <div>
@@ -111,7 +111,7 @@ const Login: React.FC = () => {
             type={showPassword.first ? "text" : "password"}
             name="password"
             value={inputValues.password}
-            minLength={8}
+            minLength={5}
             required
           />
           <label htmlFor="password">Password</label>

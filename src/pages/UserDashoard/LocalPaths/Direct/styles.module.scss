@@ -1,0 +1,95 @@
+.direct {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 100vh;
+  
+  .messages {
+    overflow-y: auto;
+    height: calc(100vh - 52px);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 24px;
+
+    & > .self > div:first-child,
+    & > .notSelf > div:first-child {
+      border-radius: 50%;
+      height: 50px;
+      width: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    & > .self > div:last-child,
+    & > .notSelf > div:last-child {
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      margin: 24px 12px;
+
+      p {
+        width: fit-content;
+        margin: 0 0 12px;
+      }
+    }
+
+    .self {
+      display: flex;
+      align-self: start;
+      
+      & > div:first-child {
+        background-color: red;
+      }
+      & > div:last-child {
+        background-color: skyblue;
+        align-items: start;
+        border-radius: 16px;
+        border-top-left-radius: 0;
+      }
+    }
+
+    .notSelf {
+      display: flex;
+      flex-direction: row-reverse;
+      align-self: flex-end;
+      
+      h4 {
+        text-align: right;
+      }
+
+      & > div:first-child {
+        background-color: blue;
+      }
+      & > div:last-child {
+        background-color: lightgray;
+        align-items: end;
+        border-radius: 16px;
+        border-top-right-radius: 0;
+      }
+    }
+  }
+
+  .textInput {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-basis: content;
+
+    input {
+      flex: 1;
+      padding: 12px;
+      font-size: 20px;
+      font-family: Montserrat, sans-serif;
+    }
+    
+    button {
+      flex-basis: 100px;
+      font-size: 20px;
+      font-family: Montserrat, sans-serif;
+    }
+  }
+}

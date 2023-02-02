@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
-import { ActiveUsers, SearchUser } from "../../components";
 import {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -10,8 +9,9 @@ import {
   SocketType,
 } from "../../interfaces";
 import { IConversation } from "../../interfaces/message";
-import Direct from "./LocalPaths/Direct";
-import UserContacts from "./LocalPaths/UserContacts";
+import Sidebar from "./components/Sidebar";
+import { Direct, UserContacts } from "./LocalPaths";
+import styles from "./styles.module.scss";
 
 const UserDashboard = () => {
   const [user, setUser] = useState<IUser | null>(null);
@@ -67,19 +67,18 @@ const UserDashboard = () => {
     );
   }, [socket]);
 
-  return (
-    <div>
-      {isError && <p>{errorMessage}</p>}
-      <SearchUser />
-      <ActiveUsers socket={socket} />
-      <Routes>
-        <Route path="/" element={<UserContacts convs={conversations} />} />
-        <Route
-          path="/direct"
-          element={<Direct socket={socket} user={user} />}
-        />
-      </Routes>
+  return socket ? (
+    <div className={styles.wrapper}>
+      <Sidebar/>
+      <main>
+        <Routes>
+          <Route path="/" element={<UserContacts convs={conversations}/>} />
+          <Route path="/direct" element={<Direct socket={socket} user={user} />} />
+        </Routes>
+      </main>
     </div>
+  ) : (
+    <div>Loading...</div>
   );
 };
 

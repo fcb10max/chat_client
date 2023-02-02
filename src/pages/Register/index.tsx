@@ -129,7 +129,7 @@ const Register: React.FC = () => {
             type={showPassword.first ? "text" : "password"}
             name="password"
             value={inputValues.password}
-            minLength={8}
+            minLength={5}
             required
           />
           <label htmlFor="password">Password</label>
@@ -150,7 +150,7 @@ const Register: React.FC = () => {
             type={showPassword.last ? "text" : "password"}
             name="verify_password"
             value={inputValues.verify_password}
-            minLength={8}
+            minLength={5}
             required
           />
           <label htmlFor="verify_password">Verify password</label>

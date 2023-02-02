@@ -1,0 +1,31 @@
+.userContacts {
+  display: flex;
+  flex-direction: column;
+
+  & > a {
+    width: 100%;
+    display: flex;
+    padding: 12px 16px;
+    text-decoration: none;
+
+    & > div:nth-child(1) {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: aqua;
+    }
+    & > div:nth-child(2) {
+      flex: 7;
+
+      h3 {
+        font-size: 20px;
+        color: #000;
+      }
+      p {
+        font-size: 16px;
+        color: lightgrey;
+      }
+    }
+  }
+}
