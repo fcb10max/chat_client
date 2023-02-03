@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { IConversation } from "../../../../interfaces/message";
+import { IConversation } from "../../../../interfaces";
 import styles from "./styles.module.scss";
 
 interface IUserContacts {
@@ -15,13 +15,15 @@ export const UserContacts: React.FC<IUserContacts> = ({ convs }) => {
           to={"/user/dashboard/direct"}
           state={{
             selectedUser: {
-              userID: conv.user.id,
+              id: conv.user.id,
               username: conv.user.username,
             },
           }}
           key={conv.user.id}
         >
-          <div>TODO: avatar</div>
+          <div>
+            <div></div>
+          </div>
           <div>
             <h3>{conv.user.username}</h3>
             <p>{conv.lastMsg.content}</p>

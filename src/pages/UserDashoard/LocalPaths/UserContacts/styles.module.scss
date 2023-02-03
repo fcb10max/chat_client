@@ -13,7 +13,13 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      color: aqua;
+
+      & > div {
+        width: 85%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: chartreuse;
+      }
     }
     & > div:nth-child(2) {
       flex: 7;

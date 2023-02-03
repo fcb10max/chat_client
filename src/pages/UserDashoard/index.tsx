@@ -7,8 +7,8 @@ import {
   ServerToClientEvents,
   IUser,
   SocketType,
+  IConversation
 } from "../../interfaces";
-import { IConversation } from "../../interfaces/message";
 import Sidebar from "./components/Sidebar";
 import { Direct, UserContacts } from "./LocalPaths";
 import styles from "./styles.module.scss";
@@ -61,8 +61,9 @@ const UserDashboard = () => {
     // socket.on("message:direct", (data) => {
     //   console.log("message: ", data);
     // });
-    socket.emit("message:getAllConvs", (convs) => {
-      setConversations(convs)
+    socket.emit("message:getAllConvs", (convs, err) => {
+      if (err) return setErrorMessage(err);
+      setConversations(convs);
     });
   }, [socket]);
 
@@ -71,8 +72,11 @@ const UserDashboard = () => {
       <Sidebar socket={socket} />
       <main>
         <Routes>
-          <Route path="/" element={<UserContacts convs={conversations}/>} />
-          <Route path="/direct" element={<Direct socket={socket} user={user} />} />
+          <Route path="/" element={<UserContacts convs={conversations} />} />
+          <Route
+            path="/direct"
+            element={<Direct socket={socket} user={user} />}
+          />
         </Routes>
       </main>
     </div>

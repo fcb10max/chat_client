@@ -10,6 +10,6 @@ export interface SignInValues {
 }
 
 export interface IUser {
-  userID: number;
+  id: number;
   username: string;
 }

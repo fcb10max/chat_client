@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { IUser, SocketType } from "../../../../interfaces";
-import { IMessageFromDB } from "../../../../interfaces/message";
+import { IUser, SocketType, IMessageFromDB } from "../../../../interfaces";
 import styles from "./styles.module.scss";
 
 interface IDirect {
@@ -15,6 +14,7 @@ interface ILocationState {
 
 export const Direct: React.FC<IDirect> = ({ socket, user }) => {
   const { selectedUser } = useLocation().state as ILocationState;
+  const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const messagesRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<IMessageFromDB[]>([
@@ -22,14 +22,24 @@ export const Direct: React.FC<IDirect> = ({ socket, user }) => {
   ]);
 
   useEffect(() => {
+    if (!messagesRef.current) return;
+    messagesRef.current.scrollTo({
+      top: messagesRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages]);
+
+
+  useEffect(() => {
     if (!socket || !user) return;
     socket.emit(
       "message:getAll",
       {
-        from: user.userID,
-        to: selectedUser.userID,
+        from: user.id,
+        to: selectedUser.id,
       },
-      (res) => {
+      (res, err) => {
+        if (err) return setError(err);
         setMessages(res);
       }
     );
@@ -51,10 +61,11 @@ export const Direct: React.FC<IDirect> = ({ socket, user }) => {
       "message:direct",
       {
         msg: message,
-        to: selectedUser.userID,
-        from: user.userID,
+        to: selectedUser.id,
+        from: user.id,
       },
-      (msg) => {
+      (msg, err) => {
+        if (err) return setError(err);
         setMessages((prev) => [
           ...prev,
           {
@@ -67,17 +78,8 @@ export const Direct: React.FC<IDirect> = ({ socket, user }) => {
         ]);
       }
     );
-
     setMessage("");
   };
-
-  useEffect(() => {
-    if (!messagesRef.current) return;
-    messagesRef.current.scrollTo({
-      top: messagesRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [messages]);
 
   return (
     <div className={styles.direct}>
@@ -87,14 +89,12 @@ export const Direct: React.FC<IDirect> = ({ socket, user }) => {
           .map((msg, idx) => (
             <div
               key={idx}
-              className={
-                msg.from === user?.userID ? styles.self : styles.notSelf
-              }
+              className={msg.from === user?.id ? styles.self : styles.notSelf}
             >
               <div>TODO</div>
               <div>
                 <h4>
-                  {msg.from === user?.userID
+                  {msg.from === user?.id
                     ? user.username
                     : selectedUser.username}
                 </h4>

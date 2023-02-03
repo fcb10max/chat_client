@@ -1,6 +1,5 @@
 import { Socket } from "socket.io-client";
 import { IConversation, IMessageFromDB } from "./message";
-import { IUser } from "./user";
 
 declare module "socket.io-client" {
   interface Socket {
@@ -9,7 +8,6 @@ declare module "socket.io-client" {
 }
 export interface ServerToClientEvents {
   "message:direct": (msgData: IMessageFromDB) => void;
-  // users: (users: IUser[]) => void;
 }
 
 export interface ClientToServerEvents {
@@ -19,18 +17,18 @@ export interface ClientToServerEvents {
       from: number;
       to: number;
     },
-    callback: (msg: IMessageFromDB) => void
+    callback: (msg: IMessageFromDB, error: string) => void
   ) => void;
   "message:getAll": (
     users: { from: number; to: number },
-    callback: (res: IMessageFromDB[]) => void
+    callback: (res: IMessageFromDB[], error: string) => void
   ) => void;
   "message:getAllConvs": (
-    callback: (conversations: IConversation[]) => void
+    callback: (conversations: IConversation[], error: string) => void
   ) => void;
   "users:getSuggestions": (
     searchData: { username: string },
-    callback: (suggs: {username: string, id: number}[]) => void
+    callback: (suggs: {username: string, id: number}[], error: string) => void
   ) => void;
 }
 
