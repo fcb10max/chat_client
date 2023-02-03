@@ -8,24 +8,30 @@ declare module "socket.io-client" {
   }
 }
 export interface ServerToClientEvents {
-  "message:direct": (msgData: {
-    msg: string;
-    from: number;
-    to: number;
-  }) => void;
-  users: (users: IUser[]) => void;
-  "message:getAll": (messages: IMessageFromDB[]) => void;
-  "message:getAllConvs": (convs: IConversation[]) => void;
+  "message:direct": (msgData: IMessageFromDB) => void;
+  // users: (users: IUser[]) => void;
 }
 
 export interface ClientToServerEvents {
-  "message:direct": (msgData: {
-    msg: string;
-    from: number;
-    to: number;
-  }) => void;
-  "message:getAll": (users: { from: number; to: number }) => void;
-  "message:getAllConvs": () => void;
+  "message:direct": (
+    msgData: {
+      msg: string;
+      from: number;
+      to: number;
+    },
+    callback: (msg: IMessageFromDB) => void
+  ) => void;
+  "message:getAll": (
+    users: { from: number; to: number },
+    callback: (res: IMessageFromDB[]) => void
+  ) => void;
+  "message:getAllConvs": (
+    callback: (conversations: IConversation[]) => void
+  ) => void;
+  "users:getSuggestions": (
+    searchData: { username: string },
+    callback: (suggs: {username: string, id: number}[]) => void
+  ) => void;
 }
 
 export interface InterServerEvents {}

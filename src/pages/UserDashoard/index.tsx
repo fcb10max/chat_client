@@ -58,18 +58,17 @@ const UserDashboard = () => {
 
   useEffect(() => {
     if (!socket) return;
-    socket.on("message:direct", (data) => {
-      console.log("message: ", data);
+    // socket.on("message:direct", (data) => {
+    //   console.log("message: ", data);
+    // });
+    socket.emit("message:getAllConvs", (convs) => {
+      setConversations(convs)
     });
-    socket.emit("message:getAllConvs");
-    socket.on("message:getAllConvs", (conversations: IConversation[]) =>
-      setConversations(conversations)
-    );
   }, [socket]);
 
   return socket ? (
     <div className={styles.wrapper}>
-      <Sidebar/>
+      <Sidebar socket={socket} />
       <main>
         <Routes>
           <Route path="/" element={<UserContacts convs={conversations}/>} />

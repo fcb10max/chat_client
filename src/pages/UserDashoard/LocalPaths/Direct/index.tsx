@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { IUser, SocketType } from "../../../../interfaces";
-import { IRenderMessage } from "../../../../interfaces/message";
+import { IMessageFromDB } from "../../../../interfaces/message";
 import styles from "./styles.module.scss";
 
 interface IDirect {
@@ -17,31 +17,29 @@ export const Direct: React.FC<IDirect> = ({ socket, user }) => {
   const { selectedUser } = useLocation().state as ILocationState;
   const [message, setMessage] = useState("");
   const messagesRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState<IRenderMessage[]>([
-    { content: "", from: -1, created: 0 },
+  const [messages, setMessages] = useState<IMessageFromDB[]>([
+    { content: "", from: -1, created: -1, message_id: -1, to: -1 },
   ]);
 
   useEffect(() => {
     if (!socket || !user) return;
-    socket.emit("message:getAll", {
-      from: user.userID,
-      to: selectedUser.userID,
+    socket.emit(
+      "message:getAll",
+      {
+        from: user.userID,
+        to: selectedUser.userID,
+      },
+      (res) => {
+        setMessages(res);
+      }
+    );
+    socket.on("message:direct", (newMsg) => {
+      setMessages((prev) => [...prev, newMsg]);
     });
-    socket.on("message:direct", (data) => {
-      setMessages((prev) => [
-        ...prev,
-        { from: data.from, content: data.msg, created: Date.now() }, // TODO: invalid date
-      ]);
-    });
-    socket.on("message:getAll", (messages) => {
-      setMessages(
-        messages.map(({ content, created, from }) => ({
-          content: content,
-          created: created,
-          from: from,
-        }))
-      );
-    });
+
+    return () => {
+      socket.off("message:direct");
+    };
   }, [socket, user, selectedUser]);
 
   const messageSendHandler = (
@@ -49,20 +47,32 @@ export const Direct: React.FC<IDirect> = ({ socket, user }) => {
   ) => {
     if (!socket || !user) return;
 
-    socket.emit("message:direct", {
-      msg: message,
-      to: selectedUser.userID,
-      from: user.userID,
-    });
-    setMessages((prev) => [
-      ...prev,
-      { from: user.userID, content: message, created: Date.now() },
-    ]);
+    socket.emit(
+      "message:direct",
+      {
+        msg: message,
+        to: selectedUser.userID,
+        from: user.userID,
+      },
+      (msg) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            content: msg.content,
+            from: msg.from,
+            created: msg.created,
+            message_id: msg.message_id,
+            to: msg.to,
+          },
+        ]);
+      }
+    );
+
+    setMessage("");
   };
 
   useEffect(() => {
     if (!messagesRef.current) return;
-
     messagesRef.current.scrollTo({
       top: messagesRef.current.scrollHeight,
       behavior: "smooth",
@@ -72,22 +82,26 @@ export const Direct: React.FC<IDirect> = ({ socket, user }) => {
   return (
     <div className={styles.direct}>
       <div className={styles.messages} ref={messagesRef}>
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={msg.from === user?.userID ? styles.self : styles.notSelf}
-          >
-            <div>TODO</div>
-            <div>
-              <h4>
-                {msg.from === user?.userID
-                  ? user.username
-                  : selectedUser.username}
-              </h4>
-              <p>{msg.content}</p>
+        {messages
+          .sort((a, b) => a.created - b.created)
+          .map((msg, idx) => (
+            <div
+              key={idx}
+              className={
+                msg.from === user?.userID ? styles.self : styles.notSelf
+              }
+            >
+              <div>TODO</div>
+              <div>
+                <h4>
+                  {msg.from === user?.userID
+                    ? user.username
+                    : selectedUser.username}
+                </h4>
+                <p>{msg.content}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
       <div className={styles.textInput}>
         <input
