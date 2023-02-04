@@ -1,13 +1,10 @@
 import { Socket } from "socket.io-client";
 import { IConversation, IMessageFromDB } from "./message";
 
-declare module "socket.io-client" {
-  interface Socket {
-    username: string;
-  }
-}
 export interface ServerToClientEvents {
   "message:direct": (msgData: IMessageFromDB) => void;
+  "newOnlineUser": (user: number) => void;
+  "newOfflineUser": (user: number) => void;
 }
 
 export interface ClientToServerEvents {
@@ -28,15 +25,8 @@ export interface ClientToServerEvents {
   ) => void;
   "users:getSuggestions": (
     searchData: { username: string },
-    callback: (suggs: {username: string, id: number}[], error: string) => void
+    callback: (suggs: { username: string; id: number }[], error: string) => void
   ) => void;
-}
-
-export interface InterServerEvents {}
-
-export interface SocketData {
-  name: string;
-  age: number;
 }
 
 export type SocketType = Socket<ServerToClientEvents, ClientToServerEvents>;

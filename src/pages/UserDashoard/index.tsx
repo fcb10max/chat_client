@@ -1,14 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import { io, Socket } from "socket.io-client";
-import {
-  ClientToServerEvents,
-  ServerToClientEvents,
-  IUser,
-  SocketType,
-  IConversation
-} from "../../interfaces";
+import { io } from "socket.io-client";
+import { IUser, SocketType, IConversation } from "../../interfaces";
 import Sidebar from "./components/Sidebar";
 import { Direct, UserContacts } from "./LocalPaths";
 import styles from "./styles.module.scss";
@@ -19,6 +13,7 @@ const UserDashboard = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [conversations, setConversations] = useState<IConversation[]>([]);
+  const [activeUsers, setActiveUsers] = useState<number[]>([]);
   const navigate = useNavigate();
   const { isLoading } = useQuery({
     queryKey: ["checkToken"],
@@ -45,7 +40,7 @@ const UserDashboard = () => {
 
   useEffect(() => {
     if (!user) return;
-    const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
+    const newSocket: SocketType = io(
       process.env.REACT_APP_WS_SERVER_URL ?? "ws://localhost:3000/",
       { auth: user }
     );
@@ -65,14 +60,28 @@ const UserDashboard = () => {
       if (err) return setErrorMessage(err);
       setConversations(convs);
     });
-  }, [socket]);
+    socket.on("newOnlineUser", (onlineUser) => {
+      setActiveUsers((prev) => [...prev, onlineUser]);
+    });
+    socket.on("newOfflineUser", (offlineUser) => {
+      setActiveUsers((prev) => prev.filter((u) => u !== offlineUser));
+    });
+    return () => {
+      socket.off("newOnlineUser");
+    };
+  }, [socket, activeUsers]);
 
   return socket ? (
     <div className={styles.wrapper}>
       <Sidebar socket={socket} />
       <main>
         <Routes>
-          <Route path="/" element={<UserContacts convs={conversations} />} />
+          <Route
+            path="/"
+            element={
+              <UserContacts activeUsers={activeUsers} convs={conversations} />
+            }
+          />
           <Route
             path="/direct"
             element={<Direct socket={socket} user={user} />}

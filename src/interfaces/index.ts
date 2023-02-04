@@ -1,7 +1,5 @@
 export {
-  SocketData,
   ClientToServerEvents,
-  InterServerEvents,
   ServerToClientEvents,
   SocketType,
 } from "./socket";
