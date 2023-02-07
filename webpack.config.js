@@ -7,6 +7,8 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const webpack = require("webpack");
 
+require("dotenv").config();
+
 module.exports = {
   mode: prod ? "production" : "development",
   entry: "./src/index.tsx",
@@ -70,13 +72,16 @@ module.exports = {
         : {},
     }),
     new MiniCssExtractPlugin({
-      // Options similar to the same options in webpackOptions.output
-      // both options are optional
       filename: "[name].[contenthash].css",
       chunkFilename: "[id].[contenthash].css",
     }),
     new webpack.DefinePlugin({
-      process: { env: {} },
+      process: {
+        env: {
+          REACT_APP_HTTP_SERVER_URL: JSON.stringify(process.env.REACT_APP_HTTP_SERVER_URL),
+          REACT_APP_WS_SERVER_URL: JSON.stringify(process.env.REACT_APP_WS_SERVER_URL),
+        },
+      },
     }),
   ],
   optimization: prod

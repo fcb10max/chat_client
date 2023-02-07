@@ -18,7 +18,7 @@ const UserDashboard = () => {
   const { isLoading } = useQuery({
     queryKey: ["checkToken"],
     queryFn: () => {
-      return fetch("http://localhost:3000/api/auth/checkToken", {
+      return fetch(`${process.env.REACT_APP_HTTP_SERVER_URL}/api/auth/checkToken`, {
         credentials: "include",
       }).then(async (d) => {
         const res = await d.clone().json();
@@ -50,6 +50,7 @@ const UserDashboard = () => {
       newSocket.disconnect();
     };
   }, [user]);
+
 
   useEffect(() => {
     if (!socket) return;
