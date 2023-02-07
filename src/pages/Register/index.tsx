@@ -27,7 +27,7 @@ const Register: React.FC = () => {
   const { mutate } = useMutation<IRegisterPostRes, Error>({
     mutationFn: () => {
       const { username, password, email } = inputValues;
-      return fetch("http://localhost:3000/api/auth/register", {
+      return fetch(`${process.env.REACT_APP_HTTP_SERVER_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
