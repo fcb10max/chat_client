@@ -3,7 +3,8 @@ export interface IMessageFromDB {
   to: number,
   created: number,
   content: string,
-  message_id: number
+  message_id: number,
+  isRead: boolean
 }
 
 export interface IRenderMessage {
@@ -15,4 +16,5 @@ export interface IRenderMessage {
 export interface IConversation {
   user: {id: number, username: string} ;
   lastMsg: IMessageFromDB;
+  newMessagesCount: number
 }

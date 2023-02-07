@@ -68,6 +68,7 @@ const UserDashboard = () => {
     });
     return () => {
       socket.off("newOnlineUser");
+      socket.off("newOfflineUser");
     };
   }, [socket, activeUsers]);
 

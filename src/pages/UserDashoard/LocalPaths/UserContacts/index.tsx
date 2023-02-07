@@ -21,9 +21,8 @@ export const UserContacts: React.FC<IUserContacts> = ({
   useEffect(() => {
     setUsers(
       convs.map((i) => ({
+        ...i,
         isActive: activeUsers.indexOf(i.user.id) !== -1 ? true : false,
-        lastMsg: i.lastMsg,
-        user: i.user,
       }))
     );
   }, [convs, activeUsers]);

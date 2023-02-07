@@ -3,8 +3,9 @@ import { IConversation, IMessageFromDB } from "./message";
 
 export interface ServerToClientEvents {
   "message:direct": (msgData: IMessageFromDB) => void;
-  "newOnlineUser": (user: number) => void;
-  "newOfflineUser": (user: number) => void;
+  "message:statusUpdate": (msg_ids: number[]) => void;
+  newOnlineUser: (user: number) => void;
+  newOfflineUser: (user: number) => void;
 }
 
 export interface ClientToServerEvents {
@@ -22,6 +23,10 @@ export interface ClientToServerEvents {
   ) => void;
   "message:getAllConvs": (
     callback: (conversations: IConversation[], error: string) => void
+  ) => void;
+  "message:updateStatus": (
+    message_id: number[],
+    callback: (success: boolean, err: string) => void
   ) => void;
   "users:getSuggestions": (
     searchData: { username: string },
